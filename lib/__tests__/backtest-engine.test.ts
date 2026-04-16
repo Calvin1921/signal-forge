@@ -729,6 +729,54 @@ describe("new indicators", () => {
   });
 });
 
+describe("engine v2 — trailing stop", () => {
+  it("trailing stop activates and exits at trail level", () => {
+    const nodes: Node[] = [
+      { id: "price-1", type: "strategyNode", position: { x: 0, y: 0 }, data: { label: "Price Data", category: "data", icon: "BarChart3", nodeType: "price-data", params: {} } },
+      { id: "rsi-1", type: "strategyNode", position: { x: 200, y: 0 }, data: { label: "RSI", category: "indicator", icon: "TrendingUp", nodeType: "rsi", params: { period: 14 } } },
+      { id: "cond-1", type: "strategyNode", position: { x: 400, y: 0 }, data: { label: "RSI < 30", category: "condition", icon: "ChevronDown", nodeType: "less-than", params: { operator: "<", value: 30 } } },
+      { id: "entry-1", type: "strategyNode", position: { x: 600, y: 0 }, data: { label: "Market Entry", category: "action", icon: "LogIn", nodeType: "market-entry", params: { side: "Long", type: "Market" } } },
+      { id: "trail-1", type: "strategyNode", position: { x: 600, y: 100 }, data: { label: "Trailing Stop", category: "risk", icon: "Shield", nodeType: "trailing-stop", params: { percent: -1.5, activation: 1 } } },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "price-1", target: "rsi-1" },
+      { id: "e2", source: "rsi-1", target: "cond-1" },
+      { id: "e3", source: "cond-1", target: "entry-1" },
+      { id: "e4", source: "entry-1", target: "trail-1" },
+    ];
+    const result = runBacktestEngine({ nodes, edges, strategyName: "Trail Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.trades.length).toBeGreaterThan(0);
+    expect(result.trades.some((t) => t.holdBars < 30)).toBe(true);
+  });
+
+  it("ATR-based stop uses ATR for stop distance", () => {
+    const nodes: Node[] = [
+      { id: "price-1", type: "strategyNode", position: { x: 0, y: 0 }, data: { label: "Price Data", category: "data", icon: "BarChart3", nodeType: "price-data", params: {} } },
+      { id: "rsi-1", type: "strategyNode", position: { x: 200, y: 0 }, data: { label: "RSI", category: "indicator", icon: "TrendingUp", nodeType: "rsi", params: { period: 14 } } },
+      { id: "cond-1", type: "strategyNode", position: { x: 400, y: 0 }, data: { label: "RSI < 30", category: "condition", icon: "ChevronDown", nodeType: "less-than", params: { operator: "<", value: 30 } } },
+      { id: "entry-1", type: "strategyNode", position: { x: 600, y: 0 }, data: { label: "Market Entry", category: "action", icon: "LogIn", nodeType: "market-entry", params: { side: "Long", type: "Market" } } },
+      { id: "sl-1", type: "strategyNode", position: { x: 600, y: 100 }, data: { label: "Stop Loss", category: "risk", icon: "ShieldOff", nodeType: "stop-loss", params: { percent: -2, type: "ATR-based", atrPeriod: 14, atrMultiplier: 1.5 } } },
+      { id: "tp-1", type: "strategyNode", position: { x: 800, y: 0 }, data: { label: "Take Profit", category: "risk", icon: "ShieldCheck", nodeType: "take-profit", params: { percent: 6, type: "ATR-based", atrPeriod: 14, atrMultiplier: 3.0 } } },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "price-1", target: "rsi-1" },
+      { id: "e2", source: "rsi-1", target: "cond-1" },
+      { id: "e3", source: "cond-1", target: "entry-1" },
+      { id: "e4", source: "entry-1", target: "sl-1" },
+      { id: "e5", source: "entry-1", target: "tp-1" },
+    ];
+    const result = runBacktestEngine({ nodes, edges, strategyName: "ATR Stop Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.trades.length).toBeGreaterThan(0);
+    const fixedNodes = nodes.map((n) => {
+      if (n.id === "sl-1") return { ...n, data: { ...n.data, params: { percent: -2, type: "Fixed" } } };
+      if (n.id === "tp-1") return { ...n, data: { ...n.data, params: { percent: 6, type: "Fixed" } } };
+      return n;
+    });
+    const fixedResult = runBacktestEngine({ nodes: fixedNodes, edges, strategyName: "ATR Stop Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.stats.totalReturn).not.toEqual(fixedResult.stats.totalReturn);
+  });
+});
+
 // ── Helpers ──
 
 let _tradeCounter = 0;
