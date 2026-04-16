@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { runBacktestEngine, type BacktestInput } from "../backtest-engine";
+import { presetNodeGraphs } from "../seed-data";
 import { generateOHLCV } from "../generate-ohlcv";
 import { computeStats, classifyHealth, type BacktestTrade } from "../compute-stats";
 import type { Node, Edge } from "@xyflow/react";
@@ -799,3 +800,34 @@ function makeTrade(overrides: Partial<BacktestTrade>): BacktestTrade {
     ...overrides,
   };
 }
+
+describe("engine v2 — preset integration", () => {
+  it("EMA Ribbon preset produces trades with 3-condition AND chain", () => {
+    const graph = presetNodeGraphs["ema-ribbon"];
+    if (!graph) throw new Error("ema-ribbon preset not found");
+    const nodes: Node[] = graph.nodes.map((n) => ({
+      id: n.id,
+      type: "strategyNode",
+      position: n.position,
+      data: { ...n.data },
+    }));
+    const edges: Edge[] = graph.edges.map((e, i) => ({
+      id: `pe-${i}`,
+      source: e.source,
+      target: e.target,
+      ...(e.sourceHandle ? { sourceHandle: e.sourceHandle } : {}),
+      ...(e.targetHandle ? { targetHandle: e.targetHandle } : {}),
+    }));
+    const result = runBacktestEngine({
+      nodes,
+      edges,
+      strategyName: "EMA Ribbon Trend",
+      asset: "BTC/USDT",
+      timeframe: "4h",
+    });
+    expect(result.trades.length).toBeGreaterThan(0);
+    expect(result.indicatorRegistry["p-ema8-1"]).toBeDefined();
+    expect(result.indicatorRegistry["p-ema21-1"]).toBeDefined();
+    expect(result.indicatorRegistry["p-ema55-1"]).toBeDefined();
+  });
+});
