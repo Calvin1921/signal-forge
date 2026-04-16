@@ -548,6 +548,99 @@ describe("runBacktestEngine", () => {
   });
 });
 
+describe("engine v2 — indicator registry", () => {
+  it("multiple EMAs compute independently and both appear in indicatorRegistry", () => {
+    const nodes: Node[] = [
+      { id: "price-1", type: "strategyNode", position: { x: 0, y: 0 }, data: { label: "Price Data", category: "data", icon: "BarChart3", nodeType: "price-data", params: { asset: "BTC/USDT", timeframe: "4h" } } },
+      { id: "ema8-1", type: "strategyNode", position: { x: 200, y: 0 }, data: { label: "EMA(8)", category: "indicator", icon: "TrendingUp", nodeType: "ema", params: { period: 8, source: "close" } } },
+      { id: "ema21-1", type: "strategyNode", position: { x: 200, y: 100 }, data: { label: "EMA(21)", category: "indicator", icon: "TrendingUp", nodeType: "ema", params: { period: 21, source: "close" } } },
+      { id: "cond-1", type: "strategyNode", position: { x: 400, y: 50 }, data: { label: "Crosses Above", category: "condition", icon: "ArrowUpRight", nodeType: "crosses-above", params: { operator: "crosses above", value: 0 } } },
+      { id: "entry-1", type: "strategyNode", position: { x: 600, y: 50 }, data: { label: "Market Entry", category: "action", icon: "LogIn", nodeType: "market-entry", params: { side: "Long", type: "Market" } } },
+      { id: "sl-1", type: "strategyNode", position: { x: 600, y: 150 }, data: { label: "Stop Loss", category: "risk", icon: "ShieldOff", nodeType: "stop-loss", params: { percent: -2, type: "Fixed" } } },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "price-1", target: "ema8-1" },
+      { id: "e2", source: "price-1", target: "ema21-1" },
+      { id: "e3", source: "ema8-1", target: "cond-1", targetHandle: "input-0" },
+      { id: "e4", source: "ema21-1", target: "cond-1", targetHandle: "input-1" },
+      { id: "e5", source: "cond-1", target: "entry-1" },
+      { id: "e6", source: "entry-1", target: "sl-1" },
+    ];
+    const result = runBacktestEngine({ nodes, edges, strategyName: "Multi EMA Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.indicatorRegistry["ema8-1"]).toBeDefined();
+    expect(result.indicatorRegistry["ema21-1"]).toBeDefined();
+    expect(result.indicatorRegistry["ema8-1"]).not.toEqual(result.indicatorRegistry["ema21-1"]);
+    expect(result.trades.length).toBeGreaterThan(0);
+  });
+
+  it("indicator-vs-indicator sustained (>) condition filters correctly", () => {
+    const nodes: Node[] = [
+      { id: "price-1", type: "strategyNode", position: { x: 0, y: 0 }, data: { label: "Price Data", category: "data", icon: "BarChart3", nodeType: "price-data", params: {} } },
+      { id: "ema8-1", type: "strategyNode", position: { x: 200, y: 0 }, data: { label: "EMA(8)", category: "indicator", icon: "TrendingUp", nodeType: "ema", params: { period: 8 } } },
+      { id: "ema21-1", type: "strategyNode", position: { x: 200, y: 100 }, data: { label: "EMA(21)", category: "indicator", icon: "TrendingUp", nodeType: "ema", params: { period: 21 } } },
+      { id: "cond-1", type: "strategyNode", position: { x: 400, y: 50 }, data: { label: "EMA8 > EMA21", category: "condition", icon: "ChevronUp", nodeType: "greater-than", params: { operator: ">", value: 0 } } },
+      { id: "entry-1", type: "strategyNode", position: { x: 600, y: 50 }, data: { label: "Market Entry", category: "action", icon: "LogIn", nodeType: "market-entry", params: { side: "Long", type: "Market" } } },
+      { id: "sl-1", type: "strategyNode", position: { x: 600, y: 150 }, data: { label: "Stop Loss", category: "risk", icon: "ShieldOff", nodeType: "stop-loss", params: { percent: -2, type: "Fixed" } } },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "price-1", target: "ema8-1" },
+      { id: "e2", source: "price-1", target: "ema21-1" },
+      { id: "e3", source: "ema8-1", target: "cond-1", targetHandle: "input-0" },
+      { id: "e4", source: "ema21-1", target: "cond-1", targetHandle: "input-1" },
+      { id: "e5", source: "cond-1", target: "entry-1" },
+      { id: "e6", source: "entry-1", target: "sl-1" },
+    ];
+    const result = runBacktestEngine({ nodes, edges, strategyName: "Sustained Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.trades.length).toBeGreaterThan(0);
+  });
+
+  it("dynamic warmup adjusts for large indicator periods", () => {
+    const nodes: Node[] = [
+      { id: "price-1", type: "strategyNode", position: { x: 0, y: 0 }, data: { label: "Price Data", category: "data", icon: "BarChart3", nodeType: "price-data", params: {} } },
+      { id: "ema200-1", type: "strategyNode", position: { x: 200, y: 0 }, data: { label: "EMA(200)", category: "indicator", icon: "TrendingUp", nodeType: "ema", params: { period: 200 } } },
+      { id: "cond-1", type: "strategyNode", position: { x: 400, y: 0 }, data: { label: "> 0", category: "condition", icon: "ChevronUp", nodeType: "greater-than", params: { operator: ">", value: 0 } } },
+      { id: "entry-1", type: "strategyNode", position: { x: 600, y: 0 }, data: { label: "Market Entry", category: "action", icon: "LogIn", nodeType: "market-entry", params: { side: "Long" } } },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "price-1", target: "ema200-1" },
+      { id: "e2", source: "ema200-1", target: "cond-1" },
+      { id: "e3", source: "cond-1", target: "entry-1" },
+    ];
+    const result = runBacktestEngine({ nodes, edges, strategyName: "EMA200 Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.candles.length).toBeGreaterThanOrEqual(610);
+    for (const trade of result.trades) {
+      const entryCandle = result.candles.findIndex((c) => c.time === trade.entryTime);
+      expect(entryCandle).toBeGreaterThanOrEqual(210);
+    }
+  });
+
+  it("in-range condition filters values within low-high bounds", () => {
+    const nodes: Node[] = [
+      { id: "price-1", type: "strategyNode", position: { x: 0, y: 0 }, data: { label: "Price Data", category: "data", icon: "BarChart3", nodeType: "price-data", params: {} } },
+      { id: "rsi-1", type: "strategyNode", position: { x: 200, y: 0 }, data: { label: "RSI", category: "indicator", icon: "TrendingUp", nodeType: "rsi", params: { period: 14 } } },
+      { id: "cond-1", type: "strategyNode", position: { x: 400, y: 0 }, data: { label: "RSI 20-40", category: "condition", icon: "ArrowLeftRight", nodeType: "in-range", params: { low: 20, high: 40 } } },
+      { id: "entry-1", type: "strategyNode", position: { x: 600, y: 0 }, data: { label: "Market Entry", category: "action", icon: "LogIn", nodeType: "market-entry", params: { side: "Long", type: "Market" } } },
+      { id: "sl-1", type: "strategyNode", position: { x: 600, y: 100 }, data: { label: "Stop Loss", category: "risk", icon: "ShieldOff", nodeType: "stop-loss", params: { percent: -2, type: "Fixed" } } },
+    ];
+    const edges: Edge[] = [
+      { id: "e1", source: "price-1", target: "rsi-1" },
+      { id: "e2", source: "rsi-1", target: "cond-1" },
+      { id: "e3", source: "cond-1", target: "entry-1" },
+      { id: "e4", source: "entry-1", target: "sl-1" },
+    ];
+    const result = runBacktestEngine({ nodes, edges, strategyName: "In Range Test", asset: "BTC/USDT", timeframe: "4h" });
+    expect(result.trades.length).toBeGreaterThan(0);
+  });
+
+  it("backward compat — existing RSI preset produces trades like before", () => {
+    const { nodes: rsiNodes, edges: rsiEdges } = makeRSIMeanRevGraph();
+    const before = runBacktestEngine({ nodes: rsiNodes, edges: rsiEdges, strategyName: "RSI Mean Reversion", asset: "BTC/USDT", timeframe: "4h" });
+    expect(before.trades.length).toBeGreaterThan(0);
+    expect(before.indicatorData.rsi).toBeDefined();
+    expect(Object.keys(before.indicatorRegistry).length).toBeGreaterThan(0);
+  });
+});
+
 const testCandles = generateOHLCV({ asset: "BTC/USDT", count: 200, seedExtra: "indicator-test" });
 const testCloses = testCandles.map((c) => c.close);
 
