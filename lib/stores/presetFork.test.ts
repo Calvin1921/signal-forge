@@ -9,6 +9,7 @@ function resetStore() {
   store.setSelectedNodeId(null);
   store.setStrategyMeta({ name: "", asset: "BTC/USDT", timeframe: "4h", version: 1 });
   store.clearForkedFrom();
+  store.setStrategyId(null);
 }
 
 describe("Preset Fork-to-Canvas", () => {
@@ -84,5 +85,19 @@ describe("Preset Fork-to-Canvas", () => {
     store.loadPreset("nonexistent-id");
     // Should stay empty
     expect(useCanvasStore.getState().nodes.length).toBe(0);
+  });
+
+  it("loadPreset sets strategyId so [id] route can detect already-loaded", () => {
+    const store = useCanvasStore.getState();
+    store.loadPreset("ema-ribbon");
+    expect(useCanvasStore.getState().strategyId).toBe("ema-ribbon");
+  });
+
+  it("clearCanvas resets strategyId", () => {
+    const store = useCanvasStore.getState();
+    store.loadPreset("btc-mean-rev");
+    expect(useCanvasStore.getState().strategyId).toBe("btc-mean-rev");
+    store.clearCanvas();
+    expect(useCanvasStore.getState().strategyId).toBeNull();
   });
 });

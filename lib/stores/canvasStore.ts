@@ -325,12 +325,20 @@ interface CanvasState {
   strategyMeta: StrategyMeta;
   rejectedConnection: { sourceId: string; targetId: string } | null;
   forkedFrom: string | null;
+  /**
+   * Identifier of the currently loaded strategy (matches the route param).
+   * Set by `loadPreset` when loading a preset, and by `clearCanvas` for new
+   * strategies. Used by `/strategy/[id]` to decide whether to re-bootstrap
+   * the canvas when the route changes (direct navigation, refresh, share).
+   */
+  strategyId: string | null;
 
   // Setters
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
   setSelectedNodeId: (id: string | null) => void;
   setStrategyMeta: (meta: Partial<StrategyMeta>) => void;
+  setStrategyId: (id: string | null) => void;
 
   // Node operations
   addNode: (item: NodeLibraryItem, position: { x: number; y: number }) => void;
@@ -367,12 +375,14 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   },
   rejectedConnection: null,
   forkedFrom: null,
+  strategyId: null,
 
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
   setStrategyMeta: (meta) =>
     set((s) => ({ strategyMeta: { ...s.strategyMeta, ...meta } })),
+  setStrategyId: (id) => set({ strategyId: id }),
 
   addNode: (item, position) => {
     nodeCounter++;
@@ -541,6 +551,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         version: 1,
       },
       forkedFrom: preset?.name || graph.presetName,
+      strategyId: presetId,
       selectedNodeId: null,
     });
   },
@@ -559,6 +570,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
         version: 1,
       },
       forkedFrom: null,
+      strategyId: null,
       rejectedConnection: null,
     }),
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -27,7 +27,7 @@ import { GradientButton } from "@/components/ui/GradientButton";
 import { useCanvasStore, validateStrategy, type StrategyNodeData } from "@/lib/stores/canvasStore";
 import { usePanelStore } from "@/lib/stores/panelStore";
 import { useBacktestStore } from "@/lib/stores/backtestStore";
-import { type NodeLibraryItem } from "@/lib/seed-data";
+import { presetNodeGraphs, presetStrategies, type NodeLibraryItem } from "@/lib/seed-data";
 import {
   Zap,
   Play,
@@ -47,24 +47,50 @@ interface ContextMenuState {
   nodeId: string;
 }
 
+// ── Reserved route ids that don't map to a preset (blank canvas) ──
+const BLANK_STRATEGY_IDS = new Set(["new-strategy", "new"]);
+
 // ── Inner Canvas (needs ReactFlowProvider) ──
 
-function StrategyCanvasInner() {
+function StrategyCanvasInner({ routeId }: { routeId: string }) {
   const {
     nodes,
     edges,
     selectedNodeId,
     strategyMeta,
     forkedFrom,
+    strategyId,
     setNodes,
     setEdges,
     setSelectedNodeId,
     setStrategyMeta,
+    setStrategyId,
     addNode,
     removeNodes,
     onConnect,
     clearForkedFrom,
+    loadPreset,
   } = useCanvasStore();
+
+  // ── Bootstrap canvas from route param ──
+  // Runs when `routeId` changes (direct nav, refresh, share-link open). If the
+  // store's current strategyId already matches the route (e.g. user arrived
+  // via "Use Preset" which called loadPreset before navigating), skip —
+  // double-loading would clobber any edits made in-session.
+  useEffect(() => {
+    if (strategyId === routeId) return;
+    if (BLANK_STRATEGY_IDS.has(routeId)) {
+      // Blank draft — mark id so we don't re-bootstrap on every rerender.
+      setStrategyId(routeId);
+      return;
+    }
+    if (presetNodeGraphs[routeId]) {
+      loadPreset(routeId);
+    }
+    // Unknown id: handled by the NotFound branch in the parent component.
+    // We intentionally do NOT call setStrategyId here so the parent can
+    // detect the mismatch.
+  }, [routeId, strategyId, loadPreset, setStrategyId]);
 
   const {
     minimapVisible,
@@ -85,6 +111,27 @@ function StrategyCanvasInner() {
   const nodeTypes: NodeTypes = useMemo(() => ({ strategyNode: StrategyNode }), []);
 
   const { isReady } = validateStrategy(nodes, edges);
+
+  // ── Display meta ──
+  // Before the bootstrap effect runs (SSR + first client render after direct
+  // nav), the store still has defaults. Prefer route-derived preset metadata
+  // so server-rendered HTML and the first paint show the right title. Once
+  // the store catches up (strategyId === routeId) we switch to store values
+  // so user edits (rename, asset change) are reflected.
+  const displayMeta = useMemo(() => {
+    if (strategyId === routeId) return strategyMeta;
+    const preset = presetStrategies.find((p) => p.id === routeId);
+    const graph = presetNodeGraphs[routeId];
+    if (preset && graph) {
+      return {
+        name: preset.name,
+        asset: graph.defaultAsset,
+        timeframe: graph.defaultTimeframe,
+        version: 1,
+      };
+    }
+    return strategyMeta;
+  }, [strategyId, routeId, strategyMeta]);
 
   // ── Fit view on mount and preset load ──
   // Re-fit whenever the *identity* of the graph changes (node IDs set). This
@@ -469,23 +516,23 @@ function StrategyCanvasInner() {
         {isEditingName ? (
           <input
             autoFocus
-            defaultValue={strategyMeta.name}
+            defaultValue={displayMeta.name}
             onBlur={handleNameBlur}
             onKeyDown={handleNameKeyDown}
-            className="text-headline text-primary bg-surface-2 px-2 py-1 rounded-[var(--radius-sm)] outline-none focus-ring"
+            className="text-headline text-primary bg-surface-2 px-2 py-1 rounded-[var(--radius-sm)] outline-none focus-ring max-w-[min(42vw,360px)]"
           />
         ) : (
           <h1
-            className="text-headline text-primary cursor-pointer hover:text-accent font-medium"
+            className="text-headline text-primary cursor-pointer hover:text-accent font-medium truncate max-w-[min(42vw,360px)]"
             onClick={() => setIsEditingName(true)}
-            title="Click to rename"
+            title={displayMeta.name}
             style={{
               transitionProperty: "color",
               transitionDuration: "var(--duration-fast)",
               transitionTimingFunction: "var(--ease-smooth)",
             }}
           >
-            {strategyMeta.name}
+            {displayMeta.name}
           </h1>
         )}
         {forkedFrom && (
@@ -509,7 +556,7 @@ function StrategyCanvasInner() {
       {/* ── Top-right: Asset + Timeframe + Backtest ── */}
       <div className="fixed top-4 right-4 z-30 flex items-center gap-2 h-11 px-3 py-1.5 rounded-[var(--radius-lg)] glass">
         <select
-          value={strategyMeta.asset}
+          value={displayMeta.asset}
           onChange={(e) => handleAssetChange(e.target.value)}
           className="text-caption-1 px-2 h-8 rounded-[var(--radius-sm)] text-primary font-mono-data outline-none focus-ring appearance-none cursor-pointer"
           style={{ background: "var(--surface-3)" }}
@@ -521,7 +568,7 @@ function StrategyCanvasInner() {
 
         <div className="relative">
           <select
-            value={strategyMeta.timeframe}
+            value={displayMeta.timeframe}
             onChange={(e) => handleTimeframeChange(e.target.value)}
             className="text-caption-1 px-2 pr-6 h-8 rounded-[var(--radius-sm)] text-primary font-mono-data outline-none focus-ring appearance-none cursor-pointer"
             style={{ background: "var(--surface-2)" }}
@@ -607,12 +654,65 @@ function StrategyCanvasInner() {
   );
 }
 
+// ── Not-found fallback for unknown strategy ids ──
+
+function StrategyNotFound({ id }: { id: string }) {
+  return (
+    <div
+      className="h-screen w-screen flex items-center justify-center"
+      style={{ background: "var(--surface-0)" }}
+    >
+      <div className="glass px-8 py-10 rounded-[var(--radius-lg)] flex flex-col items-center gap-4 max-w-md text-center">
+        <h1 className="text-title-2 text-primary">Strategy not found</h1>
+        <p className="text-subhead text-secondary">
+          No strategy with id{" "}
+          <span className="font-mono-data text-primary">{id}</span> exists.
+          Start a new one or browse presets.
+        </p>
+        <div className="flex items-center gap-3 mt-2">
+          <Link
+            href="/strategy/new"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-sm)] text-footnote font-medium text-primary focus-ring"
+            style={{ background: "var(--gradient-cta)" }}
+          >
+            Start new strategy
+          </Link>
+          <Link
+            href="/presets"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-sm)] text-footnote font-medium text-secondary hover:text-primary bg-surface-2 hover:bg-surface-3 focus-ring"
+            style={{
+              transitionProperty: "color, background-color",
+              transitionDuration: "var(--duration-fast)",
+            }}
+          >
+            Browse presets
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Wrapped Page ──
 
-export default function StrategyCanvasPage() {
+export default function StrategyCanvasPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  // Next.js 15: params is a Promise in both server and client components.
+  // In a client component we unwrap with React.use() (ref: next/dist/docs
+  // 01-app/03-api-reference/03-file-conventions/dynamic-routes.md).
+  const { id } = use(params);
+
+  const isKnown = BLANK_STRATEGY_IDS.has(id) || Boolean(presetNodeGraphs[id]);
+  if (!isKnown) {
+    return <StrategyNotFound id={id} />;
+  }
+
   return (
     <ReactFlowProvider>
-      <StrategyCanvasInner />
+      <StrategyCanvasInner routeId={id} />
     </ReactFlowProvider>
   );
 }
