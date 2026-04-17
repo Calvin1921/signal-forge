@@ -140,8 +140,13 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
   // happened to stay constant (e.g. Triple EMA Trend's 8-node layout clipped
   // the rightmost risk node because the initial fit was measured before the
   // layout had settled).
+  //
+  // minZoom is intentionally low (0.15) so wide preset graphs (8-node Triple
+  // EMA Trend spans ~1200px) still fit fully on 375px mobile. padding 0.15
+  // leaves enough breathing room without pushing nodes so small they're
+  // unreadable. maxZoom caps the zoom-in on small graphs.
   const fitOptions = useMemo(
-    () => ({ padding: 0.2, maxZoom: 1.2, minZoom: 0.4, duration: 400 }),
+    () => ({ padding: 0.15, maxZoom: 1.2, minZoom: 0.15, duration: 400 }),
     [],
   );
   const nodeSignature = useMemo(
@@ -375,7 +380,7 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
           onDragOver={onDragOver}
           onDrop={onDrop}
           fitView
-          fitViewOptions={{ padding: 0.2, maxZoom: 1.2, minZoom: 0.4 }}
+          fitViewOptions={fitOptions}
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ animated: true }}
           deleteKeyCode={null}
