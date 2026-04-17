@@ -87,24 +87,35 @@ function StrategyCanvasInner() {
   const { isReady } = validateStrategy(nodes, edges);
 
   // ── Fit view on mount and preset load ──
-  const hasFittedRef = useRef(false);
+  // Re-fit whenever the *identity* of the graph changes (node IDs set). This
+  // covers initial load, preset fork, and switching strategies via the [id]
+  // route param. Using node.length alone missed re-fits when node count
+  // happened to stay constant (e.g. Triple EMA Trend's 8-node layout clipped
+  // the rightmost risk node because the initial fit was measured before the
+  // layout had settled).
+  const fitOptions = useMemo(
+    () => ({ padding: 0.2, maxZoom: 1.2, minZoom: 0.4, duration: 400 }),
+    [],
+  );
+  const nodeSignature = useMemo(
+    () => nodes.map((n) => n.id).sort().join("|"),
+    [nodes],
+  );
   useEffect(() => {
-    if (hasFittedRef.current) return;
     if (nodes.length === 0) return;
-    hasFittedRef.current = true;
     const timer = setTimeout(() => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 400 });
+      reactFlowInstance.fitView(fitOptions);
     }, 150);
     return () => clearTimeout(timer);
-  }, [nodes.length, reactFlowInstance]);
+  }, [nodeSignature, nodes.length, reactFlowInstance, fitOptions]);
 
   useEffect(() => {
     if (!forkedFrom) return;
     const timer = setTimeout(() => {
-      reactFlowInstance.fitView({ padding: 0.2, duration: 400 });
+      reactFlowInstance.fitView(fitOptions);
     }, 150);
     return () => clearTimeout(timer);
-  }, [forkedFrom, reactFlowInstance]);
+  }, [forkedFrom, reactFlowInstance, fitOptions]);
 
   // ── Node changes ──
 
@@ -317,6 +328,7 @@ function StrategyCanvasInner() {
           onDragOver={onDragOver}
           onDrop={onDrop}
           fitView
+          fitViewOptions={{ padding: 0.2, maxZoom: 1.2, minZoom: 0.4 }}
           proOptions={{ hideAttribution: true }}
           defaultEdgeOptions={{ animated: true }}
           deleteKeyCode={null}
