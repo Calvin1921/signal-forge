@@ -831,3 +831,104 @@ describe("engine v2 — preset integration", () => {
     expect(result.indicatorRegistry["p-ema55-1"]).toBeDefined();
   });
 });
+
+// ── Sharpe / Win-rate sanity bounds ──
+//
+// Regression guard for the round-2 trust bug where BTC mean-rev produced
+// Sharpe = -7326 and win rate = 0%. Every preset must now produce:
+//   - win rate in [0, 100]
+//   - Sharpe either `null` (insufficient sample) or finite and in a sane band
+//   - no NaN / Infinity leakage into the UI
+
+describe("stats sanity — Sharpe & win-rate bounds across presets", () => {
+  const presetIds = [
+    "btc-mean-rev",
+    "macd-div-swing",
+    "boll-squeeze",
+    "golden-cross",
+    "triple-ema-trend",
+    "ema-ribbon",
+  ];
+
+  for (const presetId of presetIds) {
+    it(`${presetId}: stats are finite and within sane bounds`, () => {
+      const preset = presetNodeGraphs[presetId];
+      if (!preset) return; // preset missing is fine — test only what's shipped
+
+      const nodes: Node[] = preset.nodes.map((n) => ({
+        id: n.id,
+        type: "strategyNode",
+        position: n.position,
+        data: { ...n.data },
+      }));
+      const edges: Edge[] = preset.edges.map((e, i) => ({
+        id: `s-${i}`,
+        source: e.source,
+        target: e.target,
+        ...(e.sourceHandle ? { sourceHandle: e.sourceHandle } : {}),
+        ...(e.targetHandle ? { targetHandle: e.targetHandle } : {}),
+      }));
+      const result = runBacktestEngine({
+        nodes,
+        edges,
+        strategyName: preset.presetName,
+        asset: preset.defaultAsset as "BTC/USDT",
+        timeframe: preset.defaultTimeframe,
+      });
+      const s = result.stats;
+
+      // Win rate bounds
+      expect(s.winRate).toBeGreaterThanOrEqual(0);
+      expect(s.winRate).toBeLessThanOrEqual(100);
+      expect(Number.isFinite(s.winRate)).toBe(true);
+
+      // Sharpe / Sortino: null (insufficient sample) or a finite in-band number
+      if (s.sharpe === null) {
+        expect(result.trades.length).toBeLessThan(10);
+      } else {
+        expect(Number.isFinite(s.sharpe)).toBe(true);
+        // Clamped to [-10, 10] in compute-stats; typical preset should land in [-5, 5]
+        expect(s.sharpe).toBeGreaterThanOrEqual(-10);
+        expect(s.sharpe).toBeLessThanOrEqual(10);
+      }
+      if (s.sortino !== null) {
+        expect(Number.isFinite(s.sortino) || s.sortino === Infinity).toBe(true);
+      }
+
+      // No NaN leakage on any other field
+      expect(Number.isFinite(s.totalReturn)).toBe(true);
+      expect(Number.isFinite(s.maxDrawdown)).toBe(true);
+      expect(Number.isFinite(s.profitFactor) || s.profitFactor === Infinity).toBe(true);
+    });
+  }
+
+  it("BTC mean-rev no longer shows the -7326 Sharpe regression", () => {
+    const preset = presetNodeGraphs["btc-mean-rev"];
+    const nodes: Node[] = preset.nodes.map((n) => ({
+      id: n.id,
+      type: "strategyNode",
+      position: n.position,
+      data: { ...n.data },
+    }));
+    const edges: Edge[] = preset.edges.map((e, i) => ({
+      id: `s-${i}`,
+      source: e.source,
+      target: e.target,
+    }));
+    const result = runBacktestEngine({
+      nodes,
+      edges,
+      strategyName: preset.presetName,
+      asset: "BTC/USDT",
+      timeframe: "4h",
+    });
+    // Either null (too few trades) or finite & sane. Never -7326.
+    if (result.stats.sharpe !== null) {
+      expect(Math.abs(result.stats.sharpe)).toBeLessThan(10);
+    }
+  });
+
+  it("null Sharpe → `classifyHealth` returns `no-edge` (safe default)", () => {
+    expect(classifyHealth(null, 50, 1.5)).toBe("no-edge");
+  });
+});
