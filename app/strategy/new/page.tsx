@@ -242,6 +242,11 @@ export default function NewStrategyPage() {
               <ArrowRight size={14} />
             </button>
           </div>
+
+          {/* Brand tagline — single-surface voice cue. Not repeated elsewhere. */}
+          <p className="text-caption-1 text-muted italic mt-10">
+            Your edge, made visible.
+          </p>
         </SurfaceCard>
       </main>
     </div>
