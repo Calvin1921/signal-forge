@@ -47,7 +47,7 @@ export function StatsBar({ stats }: StatsBarProps) {
             className="text-caption-1 text-muted italic"
             title={`Sharpe requires at least ${SHARPE_MIN_TRADES} trades to be meaningful`}
           >
-            Insufficient trades
+            Need <span className="font-mono-data not-italic">{SHARPE_MIN_TRADES}+</span> trades
           </span>
         )}
         <HealthPill health={stats.health} />
