@@ -8,16 +8,18 @@ import { nodeLibrary, type NodeLibraryItem } from "@/lib/seed-data";
 import { usePanelStore } from "@/lib/stores/panelStore";
 import { IconButton } from "@/components/ui/IconButton";
 import { PanelHeader } from "@/components/ui/PanelHeader";
+import { CATEGORIES, categoryColors, type NodeCategory } from "@/lib/node-fields";
 
-const categoryConfig: Record<string, { label: string; emoji: string; color: string; icon: string }> = {
-  data: { label: "Data Sources", emoji: "\ud83d\udcca", color: "var(--node-data)", icon: "BarChart3" },
-  indicator: { label: "Indicators", emoji: "\ud83d\udcc8", color: "var(--node-indicator)", icon: "TrendingUp" },
-  condition: { label: "Conditions", emoji: "\u26a1", color: "var(--node-condition)", icon: "GitBranch" },
-  action: { label: "Actions", emoji: "\ud83c\udfaf", color: "var(--node-action)", icon: "Target" },
-  risk: { label: "Risk Management", emoji: "\ud83d\udee1\ufe0f", color: "var(--node-risk)", icon: "Shield" },
+export const SIDEBAR_EXPANDED_WIDTH = 260;
+export const SIDEBAR_COLLAPSED_WIDTH = 48;
+
+const sidebarCategoryChrome: Record<NodeCategory, { sectionLabel: string; emoji: string; icon: string }> = {
+  data: { sectionLabel: "Data Sources", emoji: "\ud83d\udcca", icon: "BarChart3" },
+  indicator: { sectionLabel: "Indicators", emoji: "\ud83d\udcc8", icon: "TrendingUp" },
+  condition: { sectionLabel: "Conditions", emoji: "\u26a1", icon: "GitBranch" },
+  action: { sectionLabel: "Actions", emoji: "\ud83c\udfaf", icon: "Target" },
+  risk: { sectionLabel: "Risk Management", emoji: "\ud83d\udee1\ufe0f", icon: "Shield" },
 };
-
-const categories = ["data", "indicator", "condition", "action", "risk"];
 
 function onDragStart(event: React.DragEvent, item: NodeLibraryItem) {
   event.dataTransfer.setData("application/signalforge-node", JSON.stringify(item));
@@ -67,20 +69,21 @@ function SidebarContent({
 
       {/* Node list */}
       <div className="flex-1 overflow-y-auto p-3 pt-0 flex flex-col gap-4">
-        {categories.map((cat) => {
-          const cfg = categoryConfig[cat];
+        {CATEGORIES.map((cat) => {
+          const chrome = sidebarCategoryChrome[cat];
+          const color = categoryColors[cat];
           const items = filteredLibrary.filter((n) => n.category === cat);
           if (items.length === 0) return null;
 
           return (
             <div key={cat}>
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-caption-1">{cfg.emoji}</span>
+                <span className="text-caption-1">{chrome.emoji}</span>
                 <span
                   className="text-caption-1 font-medium uppercase tracking-wider"
-                  style={{ color: cfg.color }}
+                  style={{ color }}
                 >
-                  {cfg.label}
+                  {chrome.sectionLabel}
                 </span>
               </div>
               <div className="flex flex-col gap-1">
@@ -100,7 +103,7 @@ function SidebarContent({
                       <div
                         className="flex items-center justify-center w-5 h-5 rounded-[4px]"
                         style={{
-                          background: `color-mix(in oklch, ${cfg.color} 15%, transparent)`,
+                          background: `color-mix(in oklch, ${color} 15%, transparent)`,
                         }}
                       >
                         <IconComp size={12} className="text-secondary" />
@@ -146,7 +149,7 @@ export function NodeLibrarySidebar() {
           maxHeight: "calc(100vh - 120px)",
         }}
         animate={{
-          width: expanded ? 260 : 48,
+          width: expanded ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH,
         }}
         transition={springTransition}
         onMouseEnter={handleMouseEnter}
@@ -155,17 +158,17 @@ export function NodeLibrarySidebar() {
         {/* Collapsed: category icon column */}
         {!expanded && (
           <div className="flex flex-col items-center gap-1 py-2">
-            {categories.map((cat) => {
-              const cfg = categoryConfig[cat];
-              const IconComp = (Icons as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[cfg.icon] || Icons.Box;
+            {CATEGORIES.map((cat) => {
+              const chrome = sidebarCategoryChrome[cat];
+              const IconComp = (Icons as unknown as Record<string, React.ComponentType<{ size?: number; className?: string }>>)[chrome.icon] || Icons.Box;
               return (
                 <IconButton
                   key={cat}
                   size="sm"
                   className="w-10 h-10"
                   onClick={toggleSidebar}
-                  style={{ color: cfg.color }}
-                  title={cfg.label}
+                  style={{ color: categoryColors[cat] }}
+                  title={chrome.sectionLabel}
                 >
                   <IconComp size={16} />
                 </IconButton>

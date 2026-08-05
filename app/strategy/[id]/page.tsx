@@ -19,12 +19,12 @@ import "@xyflow/react/dist/style.css";
 
 import Link from "next/link";
 import { StrategyNode } from "@/components/canvas/StrategyNode";
-import { NodeLibrarySidebar } from "@/components/canvas/NodeLibrarySidebar";
+import { NodeLibrarySidebar, SIDEBAR_EXPANDED_WIDTH } from "@/components/canvas/NodeLibrarySidebar";
 import { NodeInspector } from "@/components/canvas/NodeInspector";
 import { BacktestPanel } from "@/components/backtest/BacktestPanel";
 import { CanvasToolbar } from "@/components/canvas/CanvasToolbar";
 import { GradientButton } from "@/components/ui/GradientButton";
-import { useCanvasStore, validateStrategy, type StrategyNodeData } from "@/lib/stores/canvasStore";
+import { useCanvasStore, validateStrategy, BLANK_STRATEGY_ID, type StrategyNodeData } from "@/lib/stores/canvasStore";
 import { usePanelStore } from "@/lib/stores/panelStore";
 import { useBacktestStore } from "@/lib/stores/backtestStore";
 import { presetNodeGraphs, presetStrategies, type NodeLibraryItem } from "@/lib/seed-data";
@@ -39,18 +39,11 @@ import {
   BarChart2,
 } from "lucide-react";
 
-// ── Context Menu ──
-
 interface ContextMenuState {
   x: number;
   y: number;
   nodeId: string;
 }
-
-// ── Reserved route ids that don't map to a preset (blank canvas) ──
-const BLANK_STRATEGY_IDS = new Set(["new-strategy", "new"]);
-
-// ── Inner Canvas (needs ReactFlowProvider) ──
 
 function StrategyCanvasInner({ routeId }: { routeId: string }) {
   const {
@@ -79,7 +72,7 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
   // double-loading would clobber any edits made in-session.
   useEffect(() => {
     if (strategyId === routeId) return;
-    if (BLANK_STRATEGY_IDS.has(routeId)) {
+    if (routeId === BLANK_STRATEGY_ID) {
       // Blank draft — mark id so we don't re-bootstrap on every rerender.
       setStrategyId(routeId);
       return;
@@ -87,9 +80,8 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
     if (presetNodeGraphs[routeId]) {
       loadPreset(routeId);
     }
-    // Unknown id: handled by the NotFound branch in the parent component.
-    // We intentionally do NOT call setStrategyId here so the parent can
-    // detect the mismatch.
+    // Unknown id: fall through so the parent's NotFound branch can fire.
+    // We intentionally do NOT call setStrategyId here.
   }, [routeId, strategyId, loadPreset, setStrategyId]);
 
   const {
@@ -647,12 +639,16 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
       {/* ── Floating Canvas Toolbar (bottom center) ── */}
       <CanvasToolbar />
 
-      {/* ── Floating Node Inspector (when a node is selected) ── */}
+      {/* Inspector is offset by the sidebar's expanded width (+ gutter) so it
+          doesn't overlap when the user drags the panel open. */}
       {selectedNodeId && (
         <NodeInspector
           key={selectedNodeId}
           onClose={() => setSelectedNodeId(null)}
-          initialPosition={{ x: sidebarExpanded ? 296 : 80, y: 120 }}
+          initialPosition={{
+            x: sidebarExpanded ? SIDEBAR_EXPANDED_WIDTH + 36 : 80,
+            y: 120,
+          }}
         />
       )}
     </div>
@@ -710,7 +706,7 @@ export default function StrategyCanvasPage({
   // 01-app/03-api-reference/03-file-conventions/dynamic-routes.md).
   const { id } = use(params);
 
-  const isKnown = BLANK_STRATEGY_IDS.has(id) || Boolean(presetNodeGraphs[id]);
+  const isKnown = id === BLANK_STRATEGY_ID || Boolean(presetNodeGraphs[id]);
   if (!isKnown) {
     return <StrategyNotFound id={id} />;
   }

@@ -3,16 +3,14 @@
 import { Navbar } from "@/components/Navbar";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { SurfaceCard } from "@/components/ui/SurfaceCard";
-import { useCanvasStore } from "@/lib/stores/canvasStore";
+import { useCanvasStore, BLANK_STRATEGY_ROUTE } from "@/lib/stores/canvasStore";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Plus } from "lucide-react";
 
-// ── Inline illustration: three connected strategy nodes ──
-// Mirrors the real node visual language (category color 4px left edge,
-// glass card, colored dot) so users preview what the canvas looks like.
-
+// Previews the canvas's real node visual language so first-timers have a
+// mental model before they commit. Uses the same --node-* OKLCH tokens the
+// live canvas uses — keeps them in sync visually.
 function NodeFlowIllustration() {
-  // Colors come from app/globals.css node-* tokens (OKLCH CSS vars).
   const cardFill = "oklch(22% 0.012 260 / 0.8)";
   const cardStroke = "oklch(40% 0.008 260 / 0.45)";
   const edgeColor = "oklch(60% 0.005 260 / 0.5)";
@@ -197,7 +195,7 @@ export default function NewStrategyPage() {
 
   const handleStartFromScratch = () => {
     clearCanvas();
-    router.push("/strategy/new-strategy");
+    router.push(BLANK_STRATEGY_ROUTE);
   };
 
   return (

@@ -9,8 +9,6 @@ interface NodeInspectorProps {
   initialPosition?: { x: number; y: number };
 }
 
-// ── Component ──
-
 export function NodeInspector({ onClose, initialPosition }: NodeInspectorProps) {
   const { nodes, selectedNodeId, updateNodeData } = useCanvasStore();
   const node = nodes.find((n) => n.id === selectedNodeId);

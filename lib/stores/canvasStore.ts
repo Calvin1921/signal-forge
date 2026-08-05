@@ -2,6 +2,9 @@ import { create } from "zustand";
 import type { Node, Edge, Connection } from "@xyflow/react";
 import { type NodeLibraryItem, nodeLibrary, presetNodeGraphs, presetStrategies } from "@/lib/seed-data";
 
+export const BLANK_STRATEGY_ID = "new-strategy";
+export const BLANK_STRATEGY_ROUTE = `/strategy/${BLANK_STRATEGY_ID}`;
+
 // ── Types ──
 
 interface StrategyMeta {
@@ -515,9 +518,9 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       } satisfies StrategyNodeData,
     }));
 
+    const nodesById = new Map(graph.nodes.map((n) => [n.id, n] as const));
     const edges: Edge[] = graph.edges.map((e, i) => {
-      const sourceNode = graph.nodes.find((n) => n.id === e.source);
-      const sourceCategory = sourceNode?.data.category || "data";
+      const sourceCategory = nodesById.get(e.source)?.data.category || "data";
       return {
         id: `pe-${i}`,
         source: e.source,
