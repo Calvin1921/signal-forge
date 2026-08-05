@@ -24,6 +24,7 @@ import { NodeInspector } from "@/components/canvas/NodeInspector";
 import { BacktestPanel } from "@/components/backtest/BacktestPanel";
 import { CanvasToolbar } from "@/components/canvas/CanvasToolbar";
 import { GradientButton } from "@/components/ui/GradientButton";
+import { SimDataBadge } from "@/components/SimDataBadge";
 import { useCanvasStore, validateStrategy, BLANK_STRATEGY_ID, type StrategyNodeData } from "@/lib/stores/canvasStore";
 import { usePanelStore } from "@/lib/stores/panelStore";
 import { useBacktestStore } from "@/lib/stores/backtestStore";
@@ -548,6 +549,7 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
             </button>
           </div>
         )}
+        <SimDataBadge compact />
       </div>
 
       {/* ── Top-right: Asset + Timeframe + Backtest ── */}
