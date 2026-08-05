@@ -10,12 +10,12 @@ Node-based trading strategy builder for stocks, crypto, and forex.
 pnpm install
 pnpm dev        # http://localhost:3000
 pnpm build      # Production build
-pnpm test       # 56 integration tests (vitest)
+pnpm test       # 89 integration tests (vitest)
 ```
 
 ## Tech Stack
 
-- Next.js 15 (App Router), TypeScript, Tailwind CSS v4
+- Next.js 16 (App Router), TypeScript, Tailwind CSS v4
 - @xyflow/react (ReactFlow) for node canvas
 - lightweight-charts v5 for TradingView-quality charts
 - Zustand for state management
@@ -45,31 +45,14 @@ pnpm test       # 56 integration tests (vitest)
 |-------|-------------|
 | `/` | Dashboard — stats, equity curve, strategies, trades |
 | `/strategy/[id]` | Strategy Canvas — node editor + backtest panel |
-| `/presets` | Preset Library — 6 strategies with fork-to-canvas |
+| `/presets` | Preset Library — 10 strategies with fork-to-canvas |
 | `/strategy/new` | New Strategy — empty state with start options |
+| `/s/[id]` | Share view — read-only editorial page per strategy |
 
 ## Quality Gates
 
 - `pnpm build` must pass (zero TypeScript errors)
-- `pnpm test` must pass (56 tests)
+- `pnpm test` must pass (89 tests)
 - Zero raw Tailwind colors (bg-white, bg-gray-*, etc.)
 - All numbers rendered with `font-mono-data` class
 - Health pills must use correct classification thresholds
-
-## Skill routing
-
-When the user's request matches an available skill, ALWAYS invoke it using the Skill
-tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-The skill has specialized workflows that produce better results than ad-hoc answers.
-
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming → invoke office-hours
-- Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Ship, deploy, push, create PR → invoke ship
-- QA, test the site, find bugs → invoke qa
-- Code review, check my diff → invoke review
-- Update docs after shipping → invoke document-release
-- Weekly retro → invoke retro
-- Design system, brand → invoke design-consultation
-- Visual audit, design polish → invoke design-review
-- Architecture review → invoke plan-eng-review

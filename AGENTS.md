@@ -1,5 +1,9 @@
 <!-- BEGIN:nextjs-agent-rules -->
-# This is NOT the Next.js you know
+# Working in this repo (AI agents)
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This project runs Next.js 16, whose APIs and conventions may postdate an
+assistant's training data. Before writing code that touches framework
+behavior, consult the vendored docs at `node_modules/next/dist/docs/` and heed
+deprecation notices. Project facts, design rules, and quality gates live in
+[CLAUDE.md](CLAUDE.md).
 <!-- END:nextjs-agent-rules -->
