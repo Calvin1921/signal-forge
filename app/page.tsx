@@ -69,7 +69,9 @@ export default function DashboardPage() {
           <SurfaceCard level={2}>
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-footnote text-secondary">Portfolio P&L Today</span>
+                <span className="text-footnote text-secondary">
+                  Portfolio P&L Today <span className="text-muted">(simulated)</span>
+                </span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <MonospaceValue
                     value={`+$${dashboardStats.portfolioPnlToday.toFixed(2)}`}
