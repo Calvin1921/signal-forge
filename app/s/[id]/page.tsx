@@ -590,7 +590,7 @@ export default function SharedStrategyPage({
           className="ed-dateline"
           style={{ marginTop: 28, display: "flex", alignItems: "center", flexWrap: "wrap" }}
         >
-          <span>Backtested</span>
+          <span>Simulated backtest</span>
           <span className="dot" />
           <span className="num">
             {sampleWindow.start} – {sampleWindow.end}
@@ -781,10 +781,12 @@ export default function SharedStrategyPage({
           className="ed-body"
           style={{ fontSize: 11.5, color: "var(--ink-ghost)", letterSpacing: "0.04em", maxWidth: "58ch" }}
         >
-          Past performance isn&apos;t predictive. Backtests have sample bias,
+          Results are from simulated market data (deterministic seeded
+          candles), not live historical prices — see the README. Past
+          performance isn&apos;t predictive. Backtests have sample bias,
           survivorship bias, and lookahead bias unless stated otherwise. A
-          strategy that worked for 720 days can stop working tomorrow. Read
-          the logic before you run it with capital.
+          strategy that worked for 720 simulated days can stop working
+          tomorrow. Read the logic before you run it with capital.
         </div>
         <div
           className="ed-kicker"
