@@ -511,21 +511,25 @@ export default function SharedStrategyPage({
   const preset = presetStrategies.find((p) => p.id === id);
   const graph = presetNodeGraphs[id];
 
+  const equity = useMemo(
+    () =>
+      preset
+        ? synthesizeEquity(preset.stats.totalReturn, preset.stats.maxDrawdown, hashSeed(id))
+        : [],
+    [id, preset],
+  );
+  const issueNumber = useMemo(() => {
+    const n = Array.from(id).reduce((a, c) => a + c.charCodeAt(0), 0);
+    return String(n % 99).padStart(2, "0");
+  }, [id]);
+
   if (!preset || !graph) {
     return <NotFound id={id} />;
   }
 
   const thesis =
     presetTheses[id] ?? preset.description ?? "A strategy on SignalForge.";
-  const equity = useMemo(
-    () => synthesizeEquity(preset.stats.totalReturn, preset.stats.maxDrawdown, hashSeed(id)),
-    [id, preset.stats.totalReturn, preset.stats.maxDrawdown],
-  );
   const window = formatAbsoluteWindow();
-  const issueNumber = useMemo(() => {
-    const n = Array.from(id).reduce((a, c) => a + c.charCodeAt(0), 0);
-    return String(n % 99).padStart(2, "0");
-  }, [id]);
   const rewardToRisk = Math.abs(preset.stats.totalReturn / preset.stats.maxDrawdown);
   const sharpeShown =
     preset.stats.totalTrades >= 10 ? preset.stats.sharpe : null;
