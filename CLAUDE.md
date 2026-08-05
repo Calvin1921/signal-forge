@@ -56,3 +56,9 @@ pnpm test       # 89 integration tests (vitest)
 - Zero raw Tailwind colors (bg-white, bg-gray-*, etc.)
 - All numbers rendered with `font-mono-data` class
 - Health pills must use correct classification thresholds
+- Every surface presenting market data or P&L must carry the simulated-data
+  disclosure — the global `<SimDataBadge />` (`components/SimDataBadge.tsx`)
+  rendered via shared chrome (`Navbar`, or the strategy canvas's own top bar,
+  which doesn't use `Navbar`). This is structural, not per-page: a route is
+  never exempt by omission — new routes/layouts must render it or carry an
+  equivalent inline disclosure (see `app/s/[id]` for that pattern).
