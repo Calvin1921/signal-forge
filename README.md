@@ -33,14 +33,24 @@ dark-only design system with enforced token discipline.
 | --- | --- |
 | ![Dashboard with equity curve and trade table](docs/screenshots/dashboard.png) | ![Editorial share page for a strategy](docs/screenshots/share.png) |
 
-## Simulated data, by design
+## Vision, current milestone, roadmap
 
-There is no exchange connection and no live market data. OHLCV candles are
-generated per asset (BTC/USDT, ETH/USDT, SPY, AAPL, EUR/USD) from a seeded
-PRNG, so every backtest is reproducible and the integration tests can assert
-exact trade counts and P&L. The interesting problems here are the graph
-semantics, the engine, and the interface — not data plumbing. Nothing in this
-repo gives trading advice.
+**Vision.** Create → edit → test → port. Build a strategy as a node graph, tune
+it against immediate backtest feedback, and eventually carry the same graph to
+a paper-trade environment or a real trading platform.
+
+**Current milestone — simulated data, by design.** This build ships the full
+builder and backtest engine running on deterministic **simulated** OHLCV:
+candles are generated per asset (BTC/USDT, ETH/USDT, SPY, AAPL, EUR/USD) from
+a seeded PRNG. That is a deliberate choice for this phase — backtests are
+reproducible run-to-run, and the 89 integration tests can assert exact trade
+counts and P&L while the graph semantics and interface are developed. The
+current build does not backtest against historical market data, and nothing in
+this repo gives trading advice.
+
+**Roadmap.** Historical market data behind the same OHLCV interface, then
+strategy portability: export adapters targeting paper-trade environments first,
+live platforms after.
 
 ## The Forge design system
 
