@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo } from "react";
+import { use, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -462,6 +462,10 @@ function annotateNode(
 
 // ── Share pills ──
 
+// location.href never changes for the lifetime of this page, so the share-URL
+// store has nothing to subscribe to.
+const emptySubscribe = () => () => {};
+
 function SharePills({ href, name }: { href: string; name: string }) {
   const shareText = `Check this strategy on SignalForge — ${name}`;
   return (
@@ -523,13 +527,22 @@ export default function SharedStrategyPage({
     return String(n % 99).padStart(2, "0");
   }, [id]);
 
+  // Server snapshot renders the canonical URL, client snapshot the real
+  // address — useSyncExternalStore reconciles the two without a hydration
+  // mismatch on the share links.
+  const currentUrl = useSyncExternalStore(
+    emptySubscribe,
+    () => globalThis.location.href,
+    () => `https://signalforge.app/s/${id}`,
+  );
+
   if (!preset || !graph) {
     return <NotFound id={id} />;
   }
 
   const thesis =
     presetTheses[id] ?? preset.description ?? "A strategy on SignalForge.";
-  const window = formatAbsoluteWindow();
+  const sampleWindow = formatAbsoluteWindow();
   const rewardToRisk = Math.abs(preset.stats.totalReturn / preset.stats.maxDrawdown);
   const sharpeShown =
     preset.stats.totalTrades >= 10 ? preset.stats.sharpe : null;
@@ -539,14 +552,6 @@ export default function SharedStrategyPage({
     loadPreset(id);
     router.push(`/strategy/${id}`);
   };
-
-  const shareHref =
-    typeof window !== "undefined" ? (globalThis as unknown as { location?: { href?: string } }).location?.href ?? "" : "";
-
-  const currentUrl =
-    typeof globalThis !== "undefined" && (globalThis as { location?: Location }).location
-      ? (globalThis as { location: Location }).location.href
-      : `https://signalforge.app/s/${id}`;
 
   return (
     <main className="ed-page">
@@ -588,7 +593,7 @@ export default function SharedStrategyPage({
           <span>Backtested</span>
           <span className="dot" />
           <span className="num">
-            {window.start} – {window.end}
+            {sampleWindow.start} – {sampleWindow.end}
           </span>
           <span className="dot" />
           <span>{preset.stats.totalTrades} trades</span>
