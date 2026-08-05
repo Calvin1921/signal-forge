@@ -1,0 +1,490 @@
+/* ── Editorial Quant — scoped to /s/[id] ──
+   Warm paper-dark palette, Fraunces display, numbered-footnote schematic.
+   Breaks from the Forge cyan/magenta chrome on purpose: this is the destination,
+   not the app. Still dark (CLAUDE.md), just warm-dark instead of cool-dark. */
+
+.editorial {
+  --paper: oklch(12% 0.012 60);
+  --paper-raised: oklch(15% 0.014 62);
+  --paper-inset: oklch(9% 0.010 58);
+  --ink: oklch(91% 0.014 80);
+  --ink-dim: oklch(65% 0.010 75);
+  --ink-faint: oklch(45% 0.008 70);
+  --ink-ghost: oklch(32% 0.006 65);
+  --rule: oklch(26% 0.006 60);
+  --rule-bright: oklch(38% 0.008 65);
+  --amber: oklch(78% 0.14 65);
+  --amber-ink: oklch(18% 0.03 60);
+  --amber-soft: oklch(78% 0.14 65 / 0.12);
+  --crimson: oklch(60% 0.13 25);
+  --crimson-soft: oklch(60% 0.13 25 / 0.14);
+  --max-width: 1120px;
+
+  background: var(--paper);
+  color: var(--ink);
+  font-feature-settings: "kern", "liga", "tnum";
+  min-height: 100vh;
+}
+
+.editorial *,
+.editorial *::before,
+.editorial *::after {
+  box-sizing: border-box;
+}
+
+/* ── Type scale — Fraunces for display, Inter for body, JetBrains for numerals ── */
+
+.ed-kicker {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.ed-headline {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-weight: 450;
+  font-variation-settings: "opsz" 144, "SOFT" 0;
+  letter-spacing: -0.024em;
+  line-height: 0.95;
+  color: var(--ink);
+  font-size: clamp(44px, 8vw, 112px);
+  text-wrap: balance;
+}
+
+.ed-headline em {
+  font-style: italic;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  color: var(--ink);
+}
+
+.ed-deck {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  font-variation-settings: "opsz" 48, "SOFT" 50;
+  font-size: clamp(18px, 2.2vw, 26px);
+  line-height: 1.45;
+  color: var(--ink-dim);
+  text-wrap: pretty;
+  max-width: 44ch;
+}
+
+.ed-dateline {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.ed-dateline .dot {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  background: var(--ink-faint);
+  border-radius: 50%;
+  margin: 0 12px;
+  vertical-align: 3px;
+}
+
+.ed-body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-dim);
+  letter-spacing: 0.002em;
+  text-wrap: pretty;
+}
+
+.ed-pullquote {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  font-variation-settings: "opsz" 60;
+  font-size: clamp(22px, 2.6vw, 30px);
+  line-height: 1.35;
+  color: var(--ink);
+  letter-spacing: -0.002em;
+  text-wrap: pretty;
+  border-left: 1px solid var(--amber);
+  padding-left: 20px;
+}
+
+.ed-small-caps {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+}
+
+.num {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum", "zero";
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* ── Rules & dividers — hairline with a centered diamond glyph ── */
+
+.ed-rule {
+  border: 0;
+  height: 1px;
+  background: var(--rule);
+  width: 100%;
+  margin: 0;
+}
+
+.ed-rule-diamond {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 48px 0;
+}
+
+.ed-rule-diamond::before,
+.ed-rule-diamond::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.ed-rule-diamond span {
+  color: var(--ink-ghost);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+}
+
+/* ── Stats table — Monocle-style tabular, small-caps headers ── */
+
+.ed-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+.ed-stats .cell {
+  padding: 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.ed-stats .cell:nth-child(odd) {
+  padding-right: 24px;
+}
+
+.ed-stats .cell:nth-child(even) {
+  padding-left: 24px;
+  border-left: 1px solid var(--rule);
+}
+
+.ed-stats .cell:nth-last-child(-n+2) {
+  border-bottom: 0;
+}
+
+.ed-stats .label {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+
+.ed-stats .value {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-feature-settings: "tnum", "zero";
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.ed-stats .value.positive { color: var(--amber); }
+.ed-stats .value.negative { color: var(--crimson); }
+.ed-stats .value.dash { color: var(--ink-faint); }
+
+.ed-stats .note {
+  font-family: var(--font-inter), sans-serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.01em;
+}
+
+/* ── Schematic — numbered node graph as architectural diagram ── */
+
+.ed-schematic {
+  width: 100%;
+  display: block;
+}
+
+.ed-schematic .node-stroke {
+  stroke: var(--rule-bright);
+  stroke-width: 1;
+  fill: var(--paper-raised);
+}
+
+.ed-schematic .node-accent {
+  stroke-width: 0;
+}
+
+.ed-schematic .node-label {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  fill: var(--ink);
+}
+
+.ed-schematic .node-param {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  fill: var(--ink-dim);
+  font-feature-settings: "tnum";
+}
+
+.ed-schematic .node-idx {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 400;
+  fill: var(--amber);
+  font-feature-settings: "sups";
+}
+
+.ed-schematic .edge {
+  stroke: var(--rule-bright);
+  stroke-width: 1;
+  fill: none;
+}
+
+.ed-schematic .edge-dot {
+  fill: var(--rule-bright);
+}
+
+/* ── Annotations — numbered footnote-style prose ── */
+
+.ed-annot {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px 18px;
+  margin-top: 32px;
+}
+
+.ed-annot .idx {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  color: var(--amber);
+  font-size: 20px;
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.ed-annot .prose {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  letter-spacing: 0.003em;
+}
+
+.ed-annot .prose .term {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.ed-annot .prose .param {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12.5px;
+  color: var(--ink);
+  font-feature-settings: "tnum";
+  background: var(--paper-raised);
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin: 0 1px;
+}
+
+/* ── Equity sparkline ── */
+
+.ed-spark {
+  width: 100%;
+  height: 84px;
+  display: block;
+}
+
+.ed-spark .line { stroke: var(--amber); stroke-width: 1.25; fill: none; }
+.ed-spark .fill { fill: var(--amber-soft); }
+.ed-spark .base { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 3; }
+.ed-spark .axis-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  fill: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+/* ── Fork CTA — editorial block button with stamped caption ── */
+
+.ed-fork {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 28px 18px 32px;
+  background: var(--amber);
+  color: var(--amber-ink);
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  border: 0;
+  cursor: pointer;
+  position: relative;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 160ms ease;
+  box-shadow: 0 1px 0 0 oklch(from var(--amber) calc(l * 0.55) c h),
+              0 10px 30px -12px oklch(from var(--amber) l c h / 0.4);
+}
+
+.ed-fork:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 0 oklch(from var(--amber) calc(l * 0.55) c h),
+              0 14px 34px -10px oklch(from var(--amber) l c h / 0.5);
+}
+
+.ed-fork:active {
+  transform: translateY(0);
+}
+
+.ed-fork:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+
+.ed-fork .arrow {
+  font-family: var(--font-fraunces), serif;
+  font-size: 22px;
+  line-height: 0.8;
+  font-weight: 300;
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ed-fork:hover .arrow {
+  transform: translateX(2px);
+}
+
+.ed-fork-caption {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-top: 14px;
+  letter-spacing: 0.002em;
+}
+
+/* ── Share pills — muted, no gradients, editorial restraint ── */
+
+.ed-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-dim);
+  font-family: var(--font-inter), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  border-radius: 0;
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.ed-share:hover { color: var(--ink); border-color: var(--rule-bright); }
+.ed-share:focus-visible { outline: 1px solid var(--amber); outline-offset: 2px; }
+
+/* ── Section layouts ── */
+
+.ed-page {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+}
+
+.ed-masthead { padding-top: 24px; padding-bottom: 40px; }
+
+.ed-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: start;
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+@media (max-width: 820px) {
+  .ed-spread { grid-template-columns: 1fr; gap: 40px; }
+  .ed-stats { grid-template-columns: 1fr; }
+  .ed-stats .cell:nth-child(even) { border-left: 0; padding-left: 0; }
+  .ed-stats .cell:nth-child(odd) { padding-right: 0; }
+}
+
+/* ── Staggered fade-up — editorial pace, not snappy ── */
+
+@keyframes ed-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ed-fade { animation: ed-fade-up 580ms cubic-bezier(0.22, 0.65, 0.22, 1) both; }
+  .ed-fade[data-delay="1"] { animation-delay: 60ms; }
+  .ed-fade[data-delay="2"] { animation-delay: 140ms; }
+  .ed-fade[data-delay="3"] { animation-delay: 240ms; }
+  .ed-fade[data-delay="4"] { animation-delay: 340ms; }
+  .ed-fade[data-delay="5"] { animation-delay: 440ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ed-fade { opacity: 1; }
+}
+
+/* ── Masthead grain overlay — subtle paper texture ── */
+
+.ed-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Little back link, styled as a page reference ── */
+
+.ed-backlink {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 160ms ease;
+}
+
+.ed-backlink::before {
+  content: "←";
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.ed-backlink:hover { color: var(--ink); }
