@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Zap, Plus, Menu, X } from "lucide-react";
 import { GradientButton } from "@/components/ui/GradientButton";
 import { IconButton } from "@/components/ui/IconButton";
+import { SimDataBadge } from "@/components/SimDataBadge";
 
 const navLinks = [
   { href: "/", label: "Dashboard" },
@@ -25,18 +26,21 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 glass-heavy">
       <div className="flex items-center justify-between px-6 py-2.5">
-        {/* Left: Logo */}
-        <Link href="/" className="flex items-center gap-2 group focus-ring rounded-[var(--radius-sm)]">
-          <div
-            className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)]"
-            style={{ background: "var(--gradient-cta)" }}
-          >
-            <Zap size={18} className="text-primary" />
-          </div>
-          <span className="text-headline text-primary tracking-tight">
-            SignalForge
-          </span>
-        </Link>
+        {/* Left: Logo + simulated-data disclosure */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <Link href="/" className="flex items-center gap-2 group focus-ring rounded-[var(--radius-sm)] shrink-0">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)]"
+              style={{ background: "var(--gradient-cta)" }}
+            >
+              <Zap size={18} className="text-primary" />
+            </div>
+            <span className="text-headline text-primary tracking-tight">
+              SignalForge
+            </span>
+          </Link>
+          <SimDataBadge />
+        </div>
 
         {/* Center: Nav links — hidden on mobile */}
         <div className="hidden md:flex items-center gap-1">
