@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import type { HealthRating } from "@/lib/seed-data";
 import type { BacktestTrade, BacktestStats } from "@/lib/compute-stats";
 import type { BacktestResult } from "@/lib/backtest-engine";
 import { runBacktestEngine } from "@/lib/backtest-engine";

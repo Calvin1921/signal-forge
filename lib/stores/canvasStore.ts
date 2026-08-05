@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Node, Edge, Connection } from "@xyflow/react";
-import { type NodeLibraryItem, nodeLibrary, presetNodeGraphs, presetStrategies } from "@/lib/seed-data";
+import { type NodeLibraryItem, presetNodeGraphs, presetStrategies } from "@/lib/seed-data";
 
 export const BLANK_STRATEGY_ID = "new-strategy";
 export const BLANK_STRATEGY_ROUTE = `/strategy/${BLANK_STRATEGY_ID}`;
@@ -142,7 +142,6 @@ export function validateStrategy(nodes: Node[], edges: Edge[]): {
   isReady: boolean;
   disconnectedNodeIds: string[];
 } {
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
   const targetIds = new Set(edges.map((e) => e.target));
   const sourceIds = new Set(edges.map((e) => e.source));
 

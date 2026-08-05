@@ -33,7 +33,7 @@ describe("Preset Fork-to-Canvas", () => {
   });
 
   it("each preset has nodes, edges, and metadata", () => {
-    for (const [id, preset] of Object.entries(presetNodeGraphs)) {
+    for (const preset of Object.values(presetNodeGraphs)) {
       expect(preset.nodes.length).toBeGreaterThanOrEqual(4);
       expect(preset.edges.length).toBeGreaterThanOrEqual(3);
       expect(preset.defaultAsset).toBeTruthy();
@@ -71,7 +71,7 @@ describe("Preset Fork-to-Canvas", () => {
   });
 
   it("each preset graph has a valid data->indicator->condition->action chain", () => {
-    for (const [id, preset] of Object.entries(presetNodeGraphs)) {
+    for (const preset of Object.values(presetNodeGraphs)) {
       const categories = preset.nodes.map((n) => n.data.category);
       expect(categories).toContain("data");
       expect(categories).toContain("indicator");

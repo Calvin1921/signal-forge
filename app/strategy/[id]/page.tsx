@@ -23,7 +23,6 @@ import { NodeLibrarySidebar, SIDEBAR_EXPANDED_WIDTH } from "@/components/canvas/
 import { NodeInspector } from "@/components/canvas/NodeInspector";
 import { BacktestPanel } from "@/components/backtest/BacktestPanel";
 import { CanvasToolbar } from "@/components/canvas/CanvasToolbar";
-import { GradientButton } from "@/components/ui/GradientButton";
 import { SimDataBadge } from "@/components/SimDataBadge";
 import { useCanvasStore, validateStrategy, BLANK_STRATEGY_ID, type StrategyNodeData } from "@/lib/stores/canvasStore";
 import { usePanelStore } from "@/lib/stores/panelStore";
@@ -103,7 +102,7 @@ function StrategyCanvasInner({ routeId }: { routeId: string }) {
 
   const nodeTypes: NodeTypes = useMemo(() => ({ strategyNode: StrategyNode }), []);
 
-  const { isReady } = validateStrategy(nodes, edges);
+  validateStrategy(nodes, edges);
 
   // ── Display meta ──
   // Before the bootstrap effect runs (SSR + first client render after direct

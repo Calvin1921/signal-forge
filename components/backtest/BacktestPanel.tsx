@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertTriangle, BarChart2 } from "lucide-react";
+import { X, AlertTriangle } from "lucide-react";
 import { IconButton } from "@/components/ui/IconButton";
 import { TradeChart, RSIChart } from "./TradeChart";
 import { StatsBar } from "./StatsBar";
@@ -87,7 +87,7 @@ export function BacktestPanel() {
   const indicatorData = useBacktestStore((s) => s.indicatorData);
   const runBacktest = useBacktestStore((s) => s.runBacktest);
 
-  const { backtestPanelOpen, toggleBacktestPanel, closeBacktestPanel } =
+  const { backtestPanelOpen, closeBacktestPanel } =
     usePanelStore();
 
   const renderContent = () => {

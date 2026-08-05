@@ -91,6 +91,30 @@ Every change must pass, locally and in CI:
 3. `pnpm lint` — zero errors, including React hooks rules
 4. Token discipline — no raw Tailwind color utilities anywhere (`bg-white`,
    `text-gray-*`, …); the codebase currently has zero
+5. Dependency audit — production dependencies must have no high-severity known
+   vulnerabilities (`pnpm audit --prod --audit-level high` in CI)
+
+## Accessibility and security
+
+- Keyboard-operable canvas controls, visible `:focus-visible` rings, 44px minimum
+  touch targets, and labelled diagram previews are built into shared UI primitives.
+- The app is client-side only and stores no customer, account, or market-provider
+  credentials. Response headers set a CSP, deny framing, disable MIME sniffing, and
+  limit browser permissions.
+- Simulated OHLCV and P&L are illustrative UI data, not monetary records. They use
+  JavaScript numbers for this deterministic prototype and must not be reused for money
+  movement or accounting.
+
+## AI-assisted development
+
+AI tools were used as an implementation aid. All generated changes were reviewed against
+the Forge design rules and verified with lint, strict TypeScript, and integration tests.
+
+## Known limitations
+
+- There is no hosted demo yet; run the local app using the commands below.
+- Data is deterministic and simulated; historical data, brokerage integration, and
+  execution are deliberately out of scope.
 
 ## Run it
 

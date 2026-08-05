@@ -13,7 +13,6 @@ import { ArrowRight, Plus } from "lucide-react";
 function NodeFlowIllustration() {
   const cardFill = "oklch(22% 0.012 260 / 0.8)";
   const cardStroke = "oklch(40% 0.008 260 / 0.45)";
-  const edgeColor = "oklch(60% 0.005 260 / 0.5)";
 
   return (
     <svg

@@ -145,7 +145,6 @@ export function runBacktestEngine(input: BacktestInput): BacktestResult {
 
   // ── Phase 1: Identify graph components ──
 
-  let dataNode: Node | null = null;
   const indicatorNodes: Node[] = [];
   const conditionNodes: Node[] = [];
   let entryNode: Node | null = null;
@@ -157,7 +156,6 @@ export function runBacktestEngine(input: BacktestInput): BacktestResult {
     const data = node.data as unknown as NodeData;
     switch (data.category) {
       case "data":
-        dataNode = node;
         break;
       case "indicator":
         indicatorNodes.push(node);
@@ -725,13 +723,11 @@ export function runBacktestEngine(input: BacktestInput): BacktestResult {
       }
 
       let exitPrice: number | null = null;
-      let exitReason = "";
 
       if (entrySide === "Long") {
         // Check fixed SL (hard floor)
         if (candle.low <= slPrice) {
           exitPrice = slPrice;
-          exitReason = "SL";
         }
 
         // Check trailing stop (can only tighten, never widen past SL)
@@ -745,7 +741,6 @@ export function runBacktestEngine(input: BacktestInput): BacktestResult {
             const effectiveTrail = Math.max(trailLevel, slPrice);
             if (candle.low <= effectiveTrail) {
               exitPrice = effectiveTrail;
-              exitReason = "Trail";
             }
           }
         }
@@ -753,13 +748,11 @@ export function runBacktestEngine(input: BacktestInput): BacktestResult {
         // Check TP
         if (!exitPrice && candle.high >= tpPrice) {
           exitPrice = tpPrice;
-          exitReason = "TP";
         }
       } else {
         // Short side
         if (candle.high >= slPrice) {
           exitPrice = slPrice;
-          exitReason = "SL";
         }
 
         if (!exitPrice && trailingStopNode && trailPct > 0) {
@@ -771,21 +764,18 @@ export function runBacktestEngine(input: BacktestInput): BacktestResult {
             const effectiveTrail = Math.min(trailLevel, slPrice);
             if (candle.high >= effectiveTrail) {
               exitPrice = effectiveTrail;
-              exitReason = "Trail";
             }
           }
         }
 
         if (!exitPrice && candle.low <= tpPrice) {
           exitPrice = tpPrice;
-          exitReason = "TP";
         }
       }
 
       // Max hold timeout
       if (!exitPrice && i - entryIdx >= maxHoldBars) {
         exitPrice = candle.close;
-        exitReason = "timeout";
       }
 
       if (exitPrice !== null) {

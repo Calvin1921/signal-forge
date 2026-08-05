@@ -2,7 +2,7 @@
 
 import { FloatingPanel } from "@/components/panels/FloatingPanel";
 import { useCanvasStore, type StrategyNodeData } from "@/lib/stores/canvasStore";
-import { fieldsByNodeType, categoryColors, type FieldDef } from "@/lib/node-fields";
+import { fieldsByNodeType, categoryColors } from "@/lib/node-fields";
 
 interface NodeInspectorProps {
   onClose: () => void;
