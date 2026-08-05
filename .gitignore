@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# local agent-tool workspaces (scratch/planning artifacts, not source)
+/.atelier/
+/docs/superpowers/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
