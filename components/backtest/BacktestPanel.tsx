@@ -44,7 +44,7 @@ function EmptyState() {
       </h4>
       <p className="text-footnote text-secondary leading-relaxed">
         Click the Backtest button in the toolbar to run your strategy against
-        historical data.
+        the simulated market data.
       </p>
     </div>
   );
