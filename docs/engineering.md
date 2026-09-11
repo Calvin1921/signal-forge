@@ -74,6 +74,8 @@ Remaining work includes complete keyboard graph authoring, inspector input label
 6. **Scale:** main-thread computation can block interaction; no worker, cancellation, or long-run resource budget. UI loading delay is not a performance guarantee.
 7. **Operational readiness:** no production deployment or hosted demo is asserted. Dependency review, accessibility checks, deployment headers, observability, and further graph/metric validation remain needed before a production claim.
 
+The confirmed correctness findings and suggested regression checks are tracked in [known issues](known-issues.md). In particular, Swing High/Low currently permits future-candle access; deterministic output alone does not establish causal correctness.
+
 ## Possible next milestones
 
 First align preset prose with executable rules and give experiments a data seed independent of their display name. Then add durable graph/run snapshots and accessible authoring. Historical-data adapters and paper-trading portability are future work; no live execution is implemented.
