@@ -1,128 +1,91 @@
 # SignalForge
 
-A visual strategy builder for traders who think in rules, not code.
+**Make a trading idea visible. Run the rules. Inspect the result.**
 
-![Strategy canvas — Triple EMA Trend as a node graph](docs/screenshots/canvas.png)
+A visual strategy builder and simulation playground, built with Next.js and TypeScript. [MIT licensed](LICENSE).
 
-Testing a trading idea usually means writing a script — most ideas die before
-they get that far. SignalForge turns the idea itself into the artifact: wire
-indicators, conditions, and risk nodes on a canvas, then backtest the graph
-deterministically in the browser.
+A trader may know the rule they want to explore, but translating it into code creates a barrier to testing it. SignalForge lets them inspect the rule as a graph, change a parameter, and see the resulting simulated trades in the same workspace.
 
-89 integration tests · 0 `any` across 9,353 lines of strict TypeScript ·
-dark-only design system with enforced token discipline.
+**The outcome:** an understandable rule and a repeatable experiment. All prices, trades, and returns are **synthetic examples**, not historical market results.
 
-## What it does
+![Four steps: express an idea, inspect its graph, run a simulated backtest, and examine the result. Change one rule and repeat.](docs/flow.svg)
 
-- **Strategy canvas** — strategies are node graphs: price data → indicators →
-  conditions → entry → risk management. Multiple indicators of the same type
-  coexist (EMA(8) and EMA(21) side by side), and conditions compare indicator
-  to indicator, not just indicator to threshold.
-- **Backtest engine** — resolves the graph into a bar-by-bar simulation:
-  14 indicator functions (EMA, RSI, MACD, Bollinger, ATR, Stochastic, ADX,
-  VWAP, Donchian, pivot points, swing highs/lows, …), an indicator registry
-  keyed by node ID, trailing stops, and ATR-based stops. Results report win
-  rate, Sharpe (only past 10 trades — below that the sample is noise), max
-  drawdown, and per-trade R-multiples.
-- **Preset library** — ready-made strategies (mean reversion, golden cross,
-  squeeze breakouts, EMA ribbons) that fork straight onto the canvas.
-- **Share pages** — every strategy gets a read-only, magazine-style page at
-  `/s/[id]` for sending around without edit access.
+[Try it locally](#try-it-locally) · [Guided walkthrough](docs/walkthrough.md) · [Engineering evidence](docs/engineering.md)
 
-| Dashboard | Share page |
-| --- | --- |
-| ![Dashboard with equity curve and trade table](docs/screenshots/dashboard.png) | ![Editorial share page for a strategy](docs/screenshots/share.png) |
+## See the loop
 
-## Vision, current milestone, roadmap
+1. **Idea:** “Enter when RSI, a momentum indicator, falls below 30.”
+2. **Graph:** open a preset and inspect the connected data, indicator, condition, entry, and risk nodes.
+3. **Backtest:** run those rules against seeded, simulated candles in the browser.
+4. **Result:** inspect trade count, drawdown, and individual trades; change the threshold and run again.
 
-**Vision.** Create → edit → test → port. Build a strategy as a node graph, tune
-it against immediate backtest feedback, and eventually carry the same graph to
-a paper-trade environment or a real trading platform.
+### 1. Make the rule visible
 
-**Current milestone — simulated data, by design.** This build ships the full
-builder and backtest engine running on deterministic **simulated** OHLCV:
-candles are generated per asset (BTC/USDT, ETH/USDT, SPY, AAPL, EUR/USD) from
-a seeded PRNG. That is a deliberate choice for this phase — backtests are
-reproducible run-to-run, and the 89 integration tests can assert exact trade
-counts and P&L while the graph semantics and interface are developed. The
-current build does not backtest against historical market data, and nothing in
-this repo gives trading advice.
+Each node answers a question: which data, which indicator, when to enter, and how to exit? Start with a preset and inspect the parameters before running it.
 
-**Roadmap.** Historical market data behind the same OHLCV interface, then
-strategy portability: export adapters targeting paper-trade environments first,
-live platforms after.
+![BTC Mean Reversion canvas: price data flows through RSI and a threshold into entry and risk nodes](docs/screenshots/rsi-graph.png)
 
-## The Forge design system
+### 2. Inspect what the rule produced
 
-The design system is written down in [DESIGN.md](DESIGN.md) and enforced, not
-aspirational:
+The result combines charts, summary statistics, and individual trades. A losing result is still useful feedback about what the rule did in this simulated scenario.
 
-- **OKLCH tokens** — every color is a CSS custom property; components never
-  hardcode values. Charts get hex equivalents through one bridge module
-  (`lib/chart-colors.ts`) because lightweight-charts cannot parse `oklch()`.
-- **Color is earned** — green means profit, red means loss, amber warns, cyan
-  is the primary action, magenta marks shorts. Decorative color is banned.
-- **No-Line Rule** — zero 1px borders. Hierarchy comes from tonal surface
-  shifts of at least 5 OKLCH lightness points.
-- **Gradient CTA Rule** — exactly one gradient per screen: the primary action.
-- **Numbers are data** — every numeric value renders in JetBrains Mono via a
-  shared `MonospaceValue` primitive; prose stays in Inter.
+![Computed synthetic backtest: three trades and Sharpe withheld below ten trades](docs/screenshots/rsi-results.png)
 
-The rules live in shared primitives (`components/ui/`), so feature code cannot
-quietly re-derive them wrong.
+*Actual local-app captures using synthetic data only. Open either image for detail. The [walkthrough](docs/walkthrough.md) follows this same preset.*
 
-## Architecture
+## Who this is for
 
-Client-side only — no backend, no auth, no database. State lives in three
-Zustand stores (canvas graph, backtest results, panel UI). The canvas is
-@xyflow/react; charts are lightweight-charts v5; panels animate with Framer
-Motion on Next.js 16 / React 19 / Tailwind v4.
+For someone who wants to explore rule-based strategies visually, and for developers interested in graph editors and deterministic simulation. The intended benefit is a shorter path from a rule to an understandable experiment; user time savings have not yet been measured.
 
-Node field definitions have a single source (`lib/node-fields.ts`) consumed by
-both the on-node controls and the inspector, so the two can't drift.
+## Try it locally
 
-## Quality gates
-
-Every change must pass, locally and in CI:
-
-1. `pnpm build` — zero TypeScript errors (strict mode, no `any`)
-2. `pnpm test` — 89 integration tests across the engine, stores, and preset
-   forking
-3. `pnpm lint` — zero errors, including React hooks rules
-4. Token discipline — no raw Tailwind color utilities anywhere (`bg-white`,
-   `text-gray-*`, …); the codebase currently has zero
-5. Dependency audit — production dependencies must have no high-severity known
-   vulnerabilities (`pnpm audit --prod --audit-level high` in CI)
-
-## Accessibility and security
-
-- Keyboard-operable canvas controls, visible `:focus-visible` rings, 44px minimum
-  touch targets, and labelled diagram previews are built into shared UI primitives.
-- The app is client-side only and stores no customer, account, or market-provider
-  credentials. Response headers set a CSP, deny framing, disable MIME sniffing, and
-  limit browser permissions.
-- Simulated OHLCV and P&L are illustrative UI data, not monetary records. They use
-  JavaScript numbers for this deterministic prototype and must not be reused for money
-  movement or accounting.
-
-## AI-assisted development
-
-AI tools were used as an implementation aid. All generated changes were reviewed against
-the Forge design rules and verified with lint, strict TypeScript, and integration tests.
-
-## Known limitations
-
-- There is no hosted demo yet; run the local app using the commands below.
-- Data is deterministic and simulated; historical data, brokerage integration, and
-  execution are deliberately out of scope.
-
-## Run it
+Use **Node.js 22+** and **pnpm 11** (the CI toolchain). No account, API key, database, or `.env` file is needed. Installation and the first build need internet access; Next.js downloads the bundled Google fonts at build time.
 
 ```bash
-pnpm install
-pnpm dev     # http://localhost:3000
-pnpm test    # vitest, 89 tests
-pnpm build   # production build
+git clone https://github.com/Calvin1921/signal-forge.git
+cd signal-forge
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Requires Node 22+ and pnpm 11.
+Open **[the ready-to-run RSI preset](http://localhost:3000/strategy/btc-mean-rev)** and click **Backtest**. The results panel should show a price chart, RSI chart, summary statistics, and trades. Keep the strategy name, asset, and timeframe unchanged; run again to reproduce the result.
+
+For a first edit, select the **RSI < 30** condition, change its **Value** to **25**, and press **Backtest** again. Read the parameter value: the node title may still say “RSI < 30.” Edits live in memory and are lost on a full page reload.
+
+If port 3000 is busy, run `pnpm dev --port 3001` and open the same route on port 3001. Desktop is the best current canvas experience. See [the walkthrough](docs/walkthrough.md) for controls, expected states, and troubleshooting.
+
+## User value and engineering substance
+
+| What the user gets | What makes it technically interesting |
+| --- | --- |
+| Rules they can inspect and edit visually | A graph is evaluated into indicator series, conditions, entries, and risk exits. |
+| A repeatable feedback loop | Seeded candles and deterministic evaluation make the same inputs reproducible. |
+| Multi-indicator rules, such as comparing two moving averages | Indicators are keyed by node ID, so two EMAs keep distinct series. |
+| A way to inspect outcomes beyond a headline return | Computed statistics, trade filters, and per-trade details; Sharpe is withheld below 10 trades. |
+| A starting point instead of an empty canvas | Ten presets load editable graphs; inline controls and the inspector share field definitions. |
+
+This is a **product-engineering prototype**, with no in-app LLM or agent. Its relevant engineering story is making structured logic inspectable, evaluation reproducible, and results understandable. AI tools assisted development; the runtime evaluates explicit rules.
+
+## Quality signals, with evidence
+
+- **Test discipline:** Vitest covers the generator, engine, statistics, graph connections, and preset loading. [Tests](lib/__tests__/backtest-engine.test.ts) include repeated-input determinism and regression cases.
+- **Review gates:** [CI](.github/workflows/ci.yml) runs lint, tests, production build, and explicit typechecking. Dependency auditing is **advisory**, not a blocking security guarantee.
+- **Accessibility foundations:** visible focus styles, native form controls, named canvas actions, and labelled diagram previews. Full keyboard graph authoring, screen-reader workflows, mobile panels, and contrast still need a dedicated audit; no WCAG conformance claim.
+- **Maintainability:** shared UI primitives, field definitions, and written [design decisions](docs/engineering.md#architecture-and-tradeoffs) make the implementation reviewable.
+
+## Current boundaries
+
+- **Known correctness gaps.** Swing High/Low can read future candles; ATR risk reporting and invalid-graph handling also need correction. The illustrated RSI walkthrough does not use Swing High/Low or ATR stops. Review [known issues](docs/known-issues.md) before extending the engine.
+- **Synthetic data only.** No historical feed, brokerage connection, live execution, or evidence of trading profitability. Fees, slippage, and realistic fills are not modeled.
+- **Two kinds of demo data.** Canvas backtests compute results from the graph. Dashboard/preset figures and share-page curves are illustrative fixtures, not the result of your latest run.
+- **Session-only edits.** No persistence or saved custom share links. `/s/[id]` presents built-in presets, not your edited graph.
+- **Determinism includes the name.** The strategy name contributes to the candle seed; renaming changes the data. Keep it fixed when comparing rule changes.
+- **Local prototype.** No hosted demo is supplied. Simulation runs on the browser's main thread. A nonce-based security policy supports the app's interactive scripts; deployment still needs validation. See the [engineering guide](docs/engineering.md#limitations-to-review-before-expanding-the-prototype).
+
+## Contribute
+
+Contributions are welcome. Start with the [contributor guide](CONTRIBUTING.md) and [known issues](docs/known-issues.md). Small, reproducible fixes to simulation correctness, accessible controls, and clearer explanations are especially useful. Use synthetic examples in issues, tests, screenshots, and demos.
+
+## Go deeper
+
+[Engineering guide and validation commands](docs/engineering.md) · [Design system](DESIGN.md) · [Audit findings](docs/repo-audit.md)
