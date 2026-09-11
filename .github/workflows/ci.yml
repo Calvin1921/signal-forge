@@ -32,6 +32,17 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Production CSP smoke check
+        run: |
+          pnpm start > "$RUNNER_TEMP/signalforge-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --silent --fail http://localhost:3000 > /dev/null; then break; fi
+            sleep 1
+          done
+          pnpm test:csp
+
       # after Build: next build generates the gitignored next-env.d.ts
       # that tsc needs for Next's ambient types
       - name: Typecheck

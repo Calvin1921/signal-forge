@@ -43,7 +43,7 @@ export default function PresetsPage() {
           <div>
             <h1 className="text-title-1 text-primary">Strategy Presets</h1>
             <p className="text-subhead text-secondary mt-1">
-              Battle-tested strategies ready to deploy. Clone and customize to fit your style.
+              Example rules to explore with simulated data. Clone a preset and inspect how it works.
             </p>
           </div>
         </div>

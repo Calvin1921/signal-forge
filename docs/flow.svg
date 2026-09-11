@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480" role="img" aria-labelledby="title desc">
+  <title id="title">SignalForge: idea to graph to backtest to result</title>
+  <desc id="desc">A conceptual four-step diagram, not a screenshot. Express a rule, inspect connected nodes, run it on seeded synthetic candles, and examine trades and drawdown. Change one rule and repeat. All data is simulated.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#58d5df"/></marker>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#eff5f7}.muted{fill:#b5c6cd}.small{font-size:18px}.body{font-size:20px}.title{font-size:28px;font-weight:700}.number{font-size:18px;fill:#58d5df;font-weight:700}</style>
+  </defs>
+  <rect width="1200" height="480" rx="24" fill="#0b141a"/>
+  <text x="36" y="43" font-size="19" font-weight="700" letter-spacing="2">SIGNALFORGE</text>
+  <text x="1164" y="43" text-anchor="end" class="small muted">CONCEPTUAL FLOW · SIMULATED DATA ONLY</text>
+  <g transform="translate(36 78)">
+    <rect width="264" height="285" rx="16" fill="#192830"/>
+    <text x="22" y="35" class="number">01 / IDEA</text>
+    <text x="22" y="77" class="title">Express a rule</text>
+    <text x="22" y="131" class="body">“Enter when RSI</text>
+    <text x="22" y="161" class="body">falls below 30.”</text>
+    <text x="22" y="221" class="small muted">Start from a preset.</text>
+    <text x="22" y="247" class="small muted">No script to write.</text>
+  </g>
+  <g transform="translate(324 78)">
+    <rect width="264" height="285" rx="16" fill="#192830"/>
+    <text x="22" y="35" class="number">02 / GRAPH</text>
+    <text x="22" y="77" class="title">Inspect the logic</text>
+    <rect x="22" y="105" width="86" height="42" rx="8" fill="#2b414d"/><text x="65" y="132" text-anchor="middle" class="small">Data</text>
+    <path d="M112 126 H148" stroke="#58d5df" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="156" y="105" width="86" height="42" rx="8" fill="#2b414d"/><text x="199" y="132" text-anchor="middle" class="small">RSI</text>
+    <text x="22" y="184" class="small">Condition → Entry → Risk</text>
+    <text x="22" y="221" class="small muted">Make each decision</text>
+    <text x="22" y="247" class="small muted">visible and editable.</text>
+  </g>
+  <g transform="translate(612 78)">
+    <rect width="264" height="285" rx="16" fill="#192830"/>
+    <text x="22" y="35" class="number">03 / BACKTEST</text>
+    <text x="22" y="77" class="title">Run the rules</text>
+    <path d="M30 170 L52 154 L74 163 L96 133 L118 146 L140 130 L162 157 L184 139 L206 146 L234 119" fill="none" stroke="#58d5df" stroke-width="3"/>
+    <text x="22" y="221" class="small muted">Seeded synthetic candles.</text>
+    <text x="22" y="247" class="small muted">Repeatable evaluation.</text>
+  </g>
+  <g transform="translate(900 78)">
+    <rect width="264" height="285" rx="16" fill="#192830"/>
+    <text x="22" y="35" class="number">04 / RESULT</text>
+    <text x="22" y="77" class="title">See what changed</text>
+    <text x="22" y="131" class="body">Trade count</text>
+    <text x="22" y="162" class="body">Drawdown · Trade rows</text>
+    <text x="22" y="221" class="small muted">Inspect the outcome.</text>
+    <text x="22" y="247" class="small muted">Keep the question visible.</text>
+  </g>
+  <path d="M1050 386 V412 H165 V386" fill="none" stroke="#58d5df" stroke-width="2" marker-end="url(#arrow)"/>
+  <rect x="395" y="396" width="410" height="32" fill="#0b141a"/>
+  <text x="600" y="418" text-anchor="middle" class="body">Change one rule. Run again.</text>
+  <text x="600" y="457" text-anchor="middle" class="small muted">The outcome is an inspectable experiment — not evidence of market performance.</text>
+</svg>
