@@ -88,4 +88,4 @@ Contributions are welcome. Start with the [contributor guide](CONTRIBUTING.md) a
 
 ## Go deeper
 
-[Engineering guide and validation commands](docs/engineering.md) · [Design system](DESIGN.md) · [Demo script / shot list](docs/demo-script.md) · [Audit findings](docs/repo-audit.md)
+[Engineering guide and validation commands](docs/engineering.md) · [Design system](DESIGN.md) · [Audit findings](docs/repo-audit.md)
