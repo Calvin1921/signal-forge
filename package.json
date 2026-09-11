@@ -12,7 +12,7 @@
     "test:csp": "node scripts/check-csp.mjs"
   },
   "dependencies": {
-    "@xyflow/react": "^12.10.2",
+    "@xyflow/react": "^12.11.6",
     "framer-motion": "^12.38.0",
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^1.28.0",
